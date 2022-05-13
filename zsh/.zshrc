@@ -135,6 +135,7 @@ alias pp="pbpaste"
 alias pc="pbcopy"
 alias tojson="python -m json.tool"
 alias tf="terraform"
+alias showfonts="fc-list : family style"
 
 alias stopalldocker="docker stop '$(docker ps -a -q)'"
 alias rmalldocker="docker rm $(docker ps -a -q)"
