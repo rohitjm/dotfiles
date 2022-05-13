@@ -14,7 +14,7 @@ export PATH="/usr/local/lib/ruby/gems/2.7.0/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/rmathew/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 
 #export PATH="/usr/local/opt/python@2/bin:$PATH"
 
