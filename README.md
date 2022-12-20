@@ -1,3 +1,11 @@
+# Install from Scratch
+
+1. Install nvim
+2. Install vim-plug: https://github.com/junegunn/vim-plug
+
+
+
+
 # LocalSetup
 files needed for local config for vim, etc.
 

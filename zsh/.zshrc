@@ -29,7 +29,7 @@ export NVM_DIR="$HOME/.nvm"
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 #ZSH_THEME="af-magic"
 #ZSH_THEME="random"
-ZSH_THEME="junkfood"
+ZSH_THEME="af-magic"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -131,14 +131,12 @@ alias ezsh="nvim ~/.zshrc";
 alias eala="vim ~/.config/alacritty/alacritty.yml"
 alias rzsh="source ~/.zshrc";
 alias lsl="ls -lhS";
+alias lsla="ls -lsaS"
 alias pp="pbpaste"
 alias pc="pbcopy"
 alias tojson="python -m json.tool"
 alias tf="terraform"
 alias showfonts="fc-list : family style"
-
-alias stopalldocker="docker stop '$(docker ps -a -q)'"
-alias rmalldocker="docker rm $(docker ps -a -q)"
 
 # tmux
 alias tx="tmux"
@@ -152,6 +150,8 @@ alias txk="tmux kill-session -t"
 alias dc="docker-compose"
 alias dps="docker ps"
 alias drm="docker rm"
+alias stopalldocker="docker stop '$(docker ps -a -q)'"
+alias rmalldocker="docker rm $(docker ps -a -q)"
 
 # git
 alias gd="git diff";
