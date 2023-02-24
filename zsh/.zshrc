@@ -1,6 +1,9 @@
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 
+# Add Homebrew install to PATH
+export PATH="/Users/rmathew/Dev/homebrew/bin:$PATH"
+
 # Add go to PATH
 export PATH="/usr/local/go/bin:$PATH"
 
@@ -158,6 +161,7 @@ alias gd="git diff";
 alias gst="git status";
 alias grh="git reset HEAD";
 alias gck="git checkout --";
+alias gckt="git checkout --track"
 alias gcane="git commit --amend --no-edit"
 alias gcm="git checkout master"
 alias undocommit="git reset --soft HEAD~1";
