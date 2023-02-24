@@ -4,26 +4,42 @@
 3. Updates to the dotfiles will be made in the git repo and automatically copied to the symlink
 
 
-# Install required apps
-# brew install homebrew
+
+########### Install Stuff ############
+
+# Install homebrew
+# Install oh-my-zsh
+# Install Vim-Plug
+
 # brew install nvim
 # brew install tmux
+# brew install fzf
 
 
+########### Symlink Dotfiles ############
 
-# symlink dotfiles
 
-# ZSH
+#### ZSH ####
 ln -s -f ~/Dev/dotfiles/zsh/.zshrc ~/.zshrc
 
-# Alacritty
-#create ~/.config/alacritty/ folder
-mkdir ~/.config/alacritty
-ln -s ~/Dev/dotfiles/alacritty.yml ~/.config/alacritty/alacritty;yml
 
-# NVIM
+
+#### NVIM ####
 # create ~/.config/nvim folder
 mkdir ~/.config/nvim
 ln -s ~/Dev/dotfiles/nvim/init.vim ~/.config/nvim/init.vim
 
-# Install Vim Plugged + plugins
+# Install vim-plug plugins
+# nvim
+# :PlugInstall
+# :UpdateRemotePlugins
+# :q!
+# :q!
+
+
+
+#### Alacritty ####
+#create ~/.config/alacritty/ folder
+mkdir ~/.config/alacritty
+ln -s ~/Dev/dotfiles/alacritty.yml ~/.config/alacritty/alacritty;yml
+

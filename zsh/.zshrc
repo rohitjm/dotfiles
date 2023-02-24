@@ -148,11 +148,11 @@ alias stopalldocker="docker stop '$(docker ps -a -q)'"
 alias rmalldocker="docker rm $(docker ps -a -q)"
 
 # tmux
+alias txsess="$DOTFILE_HOME/tmux/tmux-session.sh"
 alias tx="tmux"
 alias txa="tmux attach -t"
 alias txls="tmux ls"
 alias txn="tmux new -s"
-alias txsess="$DOTFILE_HOME/tmux/tmux-session.sh"
 alias txk="tmux kill-session -t"
 
 # docker
