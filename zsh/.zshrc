@@ -127,11 +127,15 @@ export CPPFLAGS="${CPPFLAGS} -I/usr/local/opt/zlib/include"
 # For pkg-config to find zlib you may need to set:
 export PKG_CONFIG_PATH="${PKG_CONFIG_PATH} /usr/local/opt/zlib/lib/pkgconfig"
 
+
+export DOTFILE_HOME="~/Dev/dotfiles/"
+
+
 alias vim="nvim"
 alias eohmyzsh="nvim ~/.oh-my-zsh"
 alias cl="clear";
-alias ezsh="nvim ~/.zshrc";
-alias eala="vim ~/.config/alacritty/alacritty.yml"
+alias ezsh="nvim $DOTFILE_HOME/zsh/.zshrc";
+alias eala="nvim $DOTFILE_HOME/alacritty/alacritty.yml"
 alias rzsh="source ~/.zshrc";
 alias lsl="ls -lhS";
 alias pp="pbpaste"
@@ -148,7 +152,7 @@ alias tx="tmux"
 alias txa="tmux attach -t"
 alias txls="tmux ls"
 alias txn="tmux new -s"
-alias txsess="~/Dev_Tools/tmux/tmux-session.sh"
+alias txsess="$DOTFILE_HOME/tmux/tmux-session.sh"
 alias txk="tmux kill-session -t"
 
 # docker
