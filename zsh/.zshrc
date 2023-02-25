@@ -19,20 +19,22 @@ export PATH="$HOME/.cargo/bin:$PATH"
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
-#export PATH="/usr/local/opt/python@2/bin:$PATH"
-
 #load nvm by default
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# Load Twilio config
+. ~/Dev/dotfiles/zsh/.twilio_zsh
+
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 #ZSH_THEME="af-magic"
-#ZSH_THEME="random"
-ZSH_THEME="junkfood"
+ZSH_THEME="random"
+#ZSH_THEME="junkfood"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -138,14 +140,12 @@ alias ezsh="nvim $DOTFILE_HOME/zsh/.zshrc";
 alias eala="nvim $DOTFILE_HOME/alacritty/alacritty.yml"
 alias rzsh="source ~/.zshrc";
 alias lsl="ls -lhS";
+alias lsla="ls -lahS";
 alias pp="pbpaste"
 alias pc="pbcopy"
 alias tojson="python -m json.tool"
 alias tf="terraform"
-alias showfonts="fc-list : family style"
-
-alias stopalldocker="docker stop '$(docker ps -a -q)'"
-alias rmalldocker="docker rm $(docker ps -a -q)"
+alias showfonts="system_profiler SPFontsDataType"
 
 # tmux
 alias txsess="$DOTFILE_HOME/tmux/tmux-session.sh"
@@ -159,6 +159,8 @@ alias txk="tmux kill-session -t"
 alias dc="docker-compose"
 alias dps="docker ps"
 alias drm="docker rm"
+alias stopalldocker="docker stop '$(docker ps -a -q)'"
+alias rmalldocker="docker rm $(docker ps -a -q)"
 
 # git
 alias gd="git diff";
@@ -168,6 +170,7 @@ alias gck="git checkout --";
 alias gckt="git checkout --track"
 alias gcane="git commit --amend --no-edit"
 alias gcm="git checkout master"
+alias glo="git log --oneline"
 alias undocommit="git reset --soft HEAD~1";
 
 # Kubernetes stuff
@@ -187,3 +190,4 @@ alias sulsof="sudo lsof -i -P | grep "
 #Vim commands
 alias evim="vim ~/.vimrc";
 alias envim="vim ~/.config/nvim/init.vim";
+eval "$(pyenv init -)"

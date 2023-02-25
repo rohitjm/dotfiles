@@ -14,6 +14,7 @@
 # brew install nvim
 # brew install tmux
 # brew install fzf
+# brew install tree
 
 
 ########### Symlink Dotfiles ############
