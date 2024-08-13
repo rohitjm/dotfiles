@@ -15,9 +15,8 @@ autocmd FileChangedShellPost *
 
 call plug#begin('~/.vim/plugged')
 
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'scrooloose/nerdtree'
-"Plug 'junegunn/fzf', { 'dir': '~/.vim/plugged/.fzf', 'do': './install --all' }"
 Plug '~/.vim/plugged/.fzf'
 Plug 'junegunn/fzf.vim'
 Plug 'tmhedberg/SimpylFold'
