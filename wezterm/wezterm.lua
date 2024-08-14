@@ -5,7 +5,6 @@ local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 
 -- This is where you actually apply your config choices
-
 config = {
   default_cursor_style = "BlinkingBlock",
   -- font = wezterm.font("Hack Nerd Font", { weight = 'Bold' }),
@@ -19,7 +18,7 @@ config = {
   background = {
     {
       source = {
-        File = "/Users/" .. os.getenv("USER") .. "/Dev/terminal-backgrounds/backgrounds/gradient-fire-ice.png",
+        File = "/Users/" .. os.getenv("USER") .. "/Dev/dotfiles/terminal-backgrounds/backgrounds/gradient-fire-ice.png",
       },
       hsb = {
         hue = 1.0,
