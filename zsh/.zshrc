@@ -22,6 +22,11 @@ export DOTFILE_HOME="~/Dev/dotfiles/"
 # Add Visual Studio Code (code)
 export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
 
+# Add openJDK to path
+export PATH="/Users/rmathew/Dev/homebrew/opt/openjdk/bin:$PATH"
+
+export DOTFILES="$HOME/Dev/dotfiles"
+
 #load nvm by default
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
@@ -94,9 +99,6 @@ alias bbox="kubectl run curl-rmathew --image=radial/busyboxplus:curl -i --tty --
 
 # Set Java version
 alias listjava="/usr/libexec/java_home -V"
-alias j15="export JAVA_HOME=`/usr/libexec/java_home -v 15.0`; java -version";
-alias j11="export JAVA_HOME=`/usr/libexec/java_home -v 11.0`; java -version";
-alias j8="export JAVA_HOME=`/usr/libexec/java_home -v 1.8`; java -version";
 
 # networking commands
 alias sulsof="sudo lsof -i -P | grep "
