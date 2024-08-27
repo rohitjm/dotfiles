@@ -23,12 +23,10 @@
 #### ZSH ####
 ln -s -f ~/Dev/dotfiles/zsh/.zshrc ~/.zshrc
 
-
-
-#### NVIM ####
+#### NVIM(OLD)(USE LazyVim Bootstrap Script) ####
 # create ~/.config/nvim folder
-mkdir ~/.config/nvim
-ln -s ~/Dev/dotfiles/nvim/init.vim ~/.config/nvim/init.vim
+# mkdir ~/.config/nvim
+# ln -s ~/Dev/dotfiles/nvim/init.vim ~/.config/nvim/init.vim
 
 # Install vim-plug plugins
 # nvim
@@ -36,7 +34,6 @@ ln -s ~/Dev/dotfiles/nvim/init.vim ~/.config/nvim/init.vim
 # :UpdateRemotePlugins
 # :q!
 # :q!
-
 
 
 #### Alacritty ####
