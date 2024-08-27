@@ -18,7 +18,7 @@ config = {
   background = {
     {
       source = {
-        File = "/Users/" .. os.getenv("USER") .. "/Dev/dotfiles/terminal-backgrounds/backgrounds/gradient-fire-ice.png",
+        File = "/Users/" .. os.getenv("USER") .. "/Dev/dotfiles/terminal-backgrounds/gradient-fire-ice.png",
       },
       hsb = {
         hue = 1.0,
