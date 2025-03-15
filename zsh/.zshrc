@@ -4,9 +4,6 @@ export PATH=$HOME/bin:/usr/local/bin:$PATH
 # Add Homebrew install to PATH
 export PATH="/Users/rmathew/Dev/homebrew/bin:$PATH"
 
-# Add go to PATH
-export PATH="/usr/local/go/bin:$PATH"
-
 # Add homebrew ruby installation to PATH
 export PATH="/usr/local/opt/ruby/bin:$PATH"
 
@@ -24,6 +21,13 @@ export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PA
 
 # Add openJDK to path
 export PATH="/Users/rmathew/Dev/homebrew/opt/openjdk/bin:$PATH"
+
+# Add GOROOT to PATH
+export GOROOT=$(brew --prefix go)/libexec
+export PATH=$GOROOT/bin:$PATH
+
+# Add GOPATH to PATH
+export PATH=$PATH:$(go env GOPATH)/bin
 
 export DOTFILES="$HOME/Dev/dotfiles"
 
