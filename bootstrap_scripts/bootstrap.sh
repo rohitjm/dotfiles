@@ -39,5 +39,10 @@ ln -s -f ~/Dev/dotfiles/zsh/.zshrc ~/.zshrc
 #### Alacritty ####
 #create ~/.config/alacritty/ folder
 mkdir ~/.config/alacritty
-ln -s ~/Dev/dotfiles/alacritty.yml ~/.config/alacritty/alacritty;yml
+ln -s ~/Dev/dotfiles/alacritty/alacritty.yml ~/.config/alacritty/alacritty.yml
+
+
+#### WezTerm ####
+mkdir ~/.config/wezterm
+ln -s -f ~/Dev/dotfiles/wezterm/wezterm.lua ~/.config/wezterm/wezterm.lua
 

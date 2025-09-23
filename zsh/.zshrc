@@ -1,3 +1,15 @@
+# Unlimited history
+HISTSIZE=1000000       # in-memory history size
+SAVEHIST=1000000       # number of commands saved to file
+HISTFILE=~/.zsh_history
+
+# Recommended options
+setopt APPEND_HISTORY          # append instead of overwrite
+setopt SHARE_HISTORY           # share history across sessions
+setopt INC_APPEND_HISTORY      # write after each command
+setopt HIST_IGNORE_SPACE       # ignore commands starting with space
+setopt HIST_EXPIRE_DUPS_FIRST  # drop older duplicates first
+
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -18,6 +30,16 @@ export DOTFILE_HOME="~/Dev/dotfiles/"
 
 # Add Visual Studio Code (code)
 export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
+
+# pyenv
+# Set the location for pyenv
+export PYENV_ROOT="$HOME/.pyenv"
+
+# Add pyenv to the PATH if its directory exists
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+
+# Initialize pyenv for Zsh
+eval "$(pyenv init - zsh)"
 
 # Add openJDK to path
 export PATH="/Users/rmathew/Dev/homebrew/opt/openjdk/bin:$PATH"
@@ -85,6 +107,9 @@ alias drm="docker rm"
 alias stopalldocker="docker stop '$(docker ps -a -q)'"
 alias rmalldocker="docker rm $(docker ps -a -q)"
 
+# vscode
+alias evscode="nvim $DOTFILE_HOME/vscode/settings.json"
+
 # git
 alias gd="git diff";
 alias gst="git status";
@@ -92,9 +117,10 @@ alias grh="git reset HEAD";
 alias gck="git checkout --";
 alias gckt="git checkout --track"
 alias gcane="git commit --amend --no-edit"
-alias gcm="git checkout master"
+alias gcm='git symbolic-ref --short refs/remotes/origin/HEAD | sed "s|origin/||" | xargs git checkout'
 alias glo="git log --oneline"
 alias undocommit="git reset --soft HEAD~1";
+alias unstage="git restore --staged"
 
 # Kubernetes stuff
 alias kb="kubectl"
@@ -114,3 +140,7 @@ eval "$(pyenv init -)"
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+loadomz
+
+. "$HOME/.local/bin/env"
