@@ -1,3 +1,15 @@
+# Unlimited history
+HISTSIZE=1000000       # in-memory history size
+SAVEHIST=1000000       # number of commands saved to file
+HISTFILE=~/.zsh_history
+
+# Recommended options
+setopt APPEND_HISTORY          # append instead of overwrite
+setopt SHARE_HISTORY           # share history across sessions
+setopt INC_APPEND_HISTORY      # write after each command
+setopt HIST_IGNORE_SPACE       # ignore commands starting with space
+setopt HIST_EXPIRE_DUPS_FIRST  # drop older duplicates first
+
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -31,13 +43,6 @@ eval "$(pyenv init - zsh)"
 
 # Add openJDK to path
 export PATH="/Users/rmathew/Dev/homebrew/opt/openjdk/bin:$PATH"
-
-# Add GOROOT to PATH
-export GOROOT=$(brew --prefix go)/libexec
-export PATH=$GOROOT/bin:$PATH
-
-# Add GOPATH to PATH
-export PATH=$PATH:$(go env GOPATH)/bin
 
 export DOTFILES="$HOME/Dev/dotfiles"
 
@@ -105,9 +110,10 @@ alias grh="git reset HEAD";
 alias gck="git checkout --";
 alias gckt="git checkout --track"
 alias gcane="git commit --amend --no-edit"
-alias gcm="git checkout master"
+alias gcm='git symbolic-ref --short refs/remotes/origin/HEAD | sed "s|origin/||" | xargs git checkout'
 alias glo="git log --oneline"
 alias undocommit="git reset --soft HEAD~1";
+alias unstage="git restore --staged"
 
 # Kubernetes stuff
 alias kb="kubectl"
@@ -127,5 +133,7 @@ eval "$(pyenv init -)"
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+loadomz
 
 . "$HOME/.local/bin/env"
