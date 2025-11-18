@@ -1,11 +1,20 @@
+# Unlimited history
+HISTSIZE=1000000       # in-memory history size
+SAVEHIST=1000000       # number of commands saved to file
+HISTFILE=~/.zsh_history
+
+# Recommended options
+setopt APPEND_HISTORY          # append instead of overwrite
+setopt SHARE_HISTORY           # share history across sessions
+setopt INC_APPEND_HISTORY      # write after each command
+setopt HIST_IGNORE_SPACE       # ignore commands starting with space
+setopt HIST_EXPIRE_DUPS_FIRST  # drop older duplicates first
+
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Add Homebrew install to PATH
 export PATH="/Users/rmathew/Dev/homebrew/bin:$PATH"
-
-# Add go to PATH
-export PATH="/usr/local/go/bin:$PATH"
 
 # Add homebrew ruby installation to PATH
 export PATH="/usr/local/opt/ruby/bin:$PATH"
@@ -35,6 +44,13 @@ eval "$(pyenv init - zsh)"
 # Add openJDK to path
 export PATH="/Users/rmathew/Dev/homebrew/opt/openjdk/bin:$PATH"
 
+# Add GOROOT to PATH
+export GOROOT=$(brew --prefix go)/libexec
+export PATH=$GOROOT/bin:$PATH
+
+# Add GOPATH to PATH
+export PATH=$PATH:$(go env GOPATH)/bin
+
 export DOTFILES="$HOME/Dev/dotfiles"
 
 #load nvm by default
@@ -51,6 +67,12 @@ function loadomz() {
   . ~/Dev/dotfiles/zsh/.oh-my-zsh
 }
 
+# Load Tmux Aliases
+function loadtmux() {
+  echo "Loading Tmux aliases..."
+  . ~/Dev/dotfiles/zsh/.tmux
+}
+
 # For compilers to find zlib you may need to set:
 export LDFLAGS="${LDFLAGS} -L/usr/local/opt/zlib/lib"
 export CPPFLAGS="${CPPFLAGS} -I/usr/local/opt/zlib/include"
@@ -59,7 +81,6 @@ export CPPFLAGS="${CPPFLAGS} -I/usr/local/opt/zlib/include"
 export PKG_CONFIG_PATH="${PKG_CONFIG_PATH} /usr/local/opt/zlib/lib/pkgconfig"
 
 # general aliases
-alias vim="nvim"
 alias eohmyzsh="nvim ~/.oh-my-zsh"
 alias cl="clear";
 alias ezsh="nvim $DOTFILE_HOME/zsh/.zshrc";
@@ -76,20 +97,14 @@ alias showfonts="system_profiler SPFontsDataType"
 # symlinks
 alias lnzsh="ln -s -f ~/Dev/dotfiles/zsh/.zshrc ~/.zshrc"
 
-# tmux
-alias txsess="$DOTFILE_HOME/tmux/tmux-session.sh"
-alias tx="tmux"
-alias txa="tmux attach -t"
-alias txls="tmux ls"
-alias txn="tmux new -s"
-alias txk="tmux kill-session -t"
+
 
 # docker
 alias dc="docker-compose"
 alias dps="docker ps"
 alias drm="docker rm"
-alias stopalldocker="docker stop '$(docker ps -a -q)'"
-alias rmalldocker="docker rm $(docker ps -a -q)"
+alias stopalldocker='docker stop $(docker ps -a -q)'
+alias rmalldocker='docker rm $(docker ps -a -q)'
 
 # vscode
 alias evscode="nvim $DOTFILE_HOME/vscode/settings.json"
@@ -101,14 +116,25 @@ alias grh="git reset HEAD";
 alias gck="git checkout --";
 alias gckt="git checkout --track"
 alias gcane="git commit --amend --no-edit"
-alias gcm="git checkout master"
+alias gcm='git symbolic-ref --short refs/remotes/origin/HEAD | sed "s|origin/||" | xargs git checkout'
 alias glo="git log --oneline"
 alias undocommit="git reset --soft HEAD~1";
+alias unstage="git restore --staged"
 
 # Kubernetes stuff
 alias kb="kubectl"
 alias kbx="kubectx"
 alias bbox="kubectl run curl-rmathew --image=radial/busyboxplus:curl -i --tty --rm"
+
+setns() {
+  if [ -z "$1" ]; then
+    echo "Usage: setns <namespace>"
+    return 1
+  fi
+  export KUBE_NAMESPACE="$1"
+  alias kb="kubectl -n $KUBE_NAMESPACE"
+  echo "✅ Namespace set to '$KUBE_NAMESPACE'"
+}
 
 # Set Java version
 alias listjava="/usr/libexec/java_home -V"
@@ -124,4 +150,6 @@ eval "$(pyenv init -)"
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
-. "$HOME/.local/bin/env"
+loadomz
+loadtmux
+
