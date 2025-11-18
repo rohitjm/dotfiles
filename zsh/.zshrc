@@ -67,6 +67,12 @@ function loadomz() {
   . ~/Dev/dotfiles/zsh/.oh-my-zsh
 }
 
+# Load Tmux Aliases
+function loadtmux() {
+  echo "Loading Tmux aliases..."
+  . ~/Dev/dotfiles/zsh/.tmux
+}
+
 # For compilers to find zlib you may need to set:
 export LDFLAGS="${LDFLAGS} -L/usr/local/opt/zlib/lib"
 export CPPFLAGS="${CPPFLAGS} -I/usr/local/opt/zlib/include"
@@ -75,7 +81,6 @@ export CPPFLAGS="${CPPFLAGS} -I/usr/local/opt/zlib/include"
 export PKG_CONFIG_PATH="${PKG_CONFIG_PATH} /usr/local/opt/zlib/lib/pkgconfig"
 
 # general aliases
-alias vim="nvim"
 alias eohmyzsh="nvim ~/.oh-my-zsh"
 alias cl="clear";
 alias ezsh="nvim $DOTFILE_HOME/zsh/.zshrc";
@@ -92,20 +97,14 @@ alias showfonts="system_profiler SPFontsDataType"
 # symlinks
 alias lnzsh="ln -s -f ~/Dev/dotfiles/zsh/.zshrc ~/.zshrc"
 
-# tmux
-alias txsess="$DOTFILE_HOME/tmux/tmux-session.sh"
-alias tx="tmux"
-alias txa="tmux attach -t"
-alias txls="tmux ls"
-alias txn="tmux new -s"
-alias txk="tmux kill-session -t"
+
 
 # docker
 alias dc="docker-compose"
 alias dps="docker ps"
 alias drm="docker rm"
-alias stopalldocker="docker stop '$(docker ps -a -q)'"
-alias rmalldocker="docker rm $(docker ps -a -q)"
+alias stopalldocker='docker stop $(docker ps -a -q)'
+alias rmalldocker='docker rm $(docker ps -a -q)'
 
 # vscode
 alias evscode="nvim $DOTFILE_HOME/vscode/settings.json"
@@ -127,6 +126,16 @@ alias kb="kubectl"
 alias kbx="kubectx"
 alias bbox="kubectl run curl-rmathew --image=radial/busyboxplus:curl -i --tty --rm"
 
+setns() {
+  if [ -z "$1" ]; then
+    echo "Usage: setns <namespace>"
+    return 1
+  fi
+  export KUBE_NAMESPACE="$1"
+  alias kb="kubectl -n $KUBE_NAMESPACE"
+  echo "✅ Namespace set to '$KUBE_NAMESPACE'"
+}
+
 # Set Java version
 alias listjava="/usr/libexec/java_home -V"
 
@@ -142,5 +151,5 @@ export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
 loadomz
+loadtmux
 
-. "$HOME/.local/bin/env"
