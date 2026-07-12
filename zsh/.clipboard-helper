@@ -1,0 +1,148 @@
+########################################
+# UNIVERSAL CLIPBOARD (pc / pp)
+# Supports: macOS, Linux (Wayland & X11), WSL
+# Debug mode: export CLIP_DEBUG=1
+########################################
+
+# Helper: print debug messages only if CLIP_DEBUG=1
+_clip_dbg() {
+    if [[ -n "$CLIP_DEBUG" ]]; then
+        echo "[clip] $*"
+    fi
+}
+
+# Detect the best available clipboard backend
+_clip_backend_copy() {
+    if command -v pbcopy >/dev/null 2>&1; then
+        _clip_dbg "Using pbcopy (macOS)"
+        echo "pbcopy"
+        return
+    fi
+    if command -v wl-copy >/dev/null 2>&1; then
+        _clip_dbg "Using wl-copy (Wayland)"
+        echo "wl-copy"
+        return
+    fi
+    if command -v xclip >/dev/null 2>&1; then
+        _clip_dbg "Using xclip (X11)"
+        echo "xclip"
+        return
+    fi
+    if command -v xsel >/dev/null 2>&1; then
+        _clip_dbg "Using xsel (X11)"
+        echo "xsel"
+        return
+    fi
+    if command -v clip.exe >/dev/null 2>&1; then
+        _clip_dbg "Using clip.exe (WSL)"
+        echo "clip.exe"
+        return
+    fi
+}
+
+_clip_backend_paste() {
+    if command -v pbpaste >/dev/null 2>&1; then
+        _clip_dbg "Using pbpaste (macOS)"
+        echo "pbpaste"
+        return
+    fi
+    if command -v wl-paste >/dev/null 2>&1; then
+        _clip_dbg "Using wl-paste (Wayland)"
+        echo "wl-paste"
+        return
+    fi
+    if command -v xclip >/dev/null 2>&1; then
+        _clip_dbg "Using xclip (X11)"
+        echo "xclip"
+        return
+    fi
+    if command -v xsel >/dev/null 2>&1; then
+        _clip_dbg "Using xsel (X11)"
+        echo "xsel"
+        return
+    fi
+    if command -v powershell.exe >/dev/null 2>&1; then
+        _clip_dbg "Using powershell.exe Get-Clipboard (WSL)"
+        echo "powershell.exe"
+        return
+    fi
+}
+
+########################################
+# pc = copy to clipboard
+########################################
+pc() {
+    backend=$(_clip_backend_copy)
+
+    case "$backend" in
+        pbcopy) pbcopy ;;
+        wl-copy) wl-copy ;;
+        xclip) xclip -selection clipboard ;;
+        xsel) xsel --clipboard --input ;;
+        clip.exe) clip.exe ;;
+        *)
+            echo "No clipboard tool available. Run: install-clipboard-tool" >&2
+            return 1
+            ;;
+    esac
+}
+
+########################################
+# pp = paste from clipboard
+########################################
+pp() {
+    backend=$(_clip_backend_paste)
+
+    case "$backend" in
+        pbpaste) pbpaste ;;
+        wl-paste) wl-paste ;;
+        xclip) xclip -selection clipboard -o ;;
+        xsel) xsel --clipboard --output ;;
+        powershell.exe) powershell.exe -NoProfile -Command Get-Clipboard ;;
+        *)
+            echo "No clipboard tool available. Run: install-clipboard-tool" >&2
+            return 1
+            ;;
+    esac
+}
+
+########################################
+# INSTALLATION HELPER (brew + apt)
+########################################
+install-clipboard-tool() {
+    echo "Installing clipboard tools…"
+
+    # macOS
+    if command -v brew >/dev/null 2>&1; then
+        echo "Detected macOS / Homebrew"
+        echo "pbcopy/pbpaste already included in macOS"
+        echo "Installing xclip and xsel (optional fallback tools)…"
+        brew install xclip xsel
+        return
+    fi
+
+    # Linux (APT)
+    if command -v apt-get >/dev/null 2>&1; then
+        echo "Detected Debian/Ubuntu"
+        sudo apt-get update
+        sudo apt-get install -y xclip xsel wl-clipboard
+        return
+    fi
+
+    # Arch
+    if command -v pacman >/dev/null 2>&1; then
+        echo "Detected Arch Linux"
+        sudo pacman -Syu xclip xsel wl-clipboard
+        return
+    fi
+
+    # Fedora
+    if command -v dnf >/dev/null 2>&1; then
+        echo "Detected Fedora"
+        sudo dnf install -y xclip xsel wl-clipboard
+        return
+    fi
+
+    echo "Unsupported OS: please install xclip/xsel or wl-copy manually."
+}
+

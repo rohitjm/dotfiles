@@ -11,55 +11,63 @@ setopt HIST_IGNORE_SPACE       # ignore commands starting with space
 setopt HIST_EXPIRE_DUPS_FIRST  # drop older duplicates first
 
 # If you come from bash you might have to change your $PATH.
-export PATH=$HOME/bin:/usr/local/bin:$PATH
-
-# Add Homebrew install to PATH
-export PATH="/Users/rmathew/Dev/homebrew/bin:$PATH"
-
-# Add homebrew ruby installation to PATH
-export PATH="/usr/local/opt/ruby/bin:$PATH"
-
-# Add gem install directory to PATH
-export PATH="/usr/local/lib/ruby/gems/2.7.0/bin:$PATH"
+export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
 # Add RUST cargo to PATH
 export PATH="$HOME/.cargo/bin:$PATH"
 
 # set dotfile directory as env var
-export DOTFILE_HOME="~/Dev/dotfiles/"
-
-# Add Visual Studio Code (code)
-export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
-
-# pyenv
-# Set the location for pyenv
-export PYENV_ROOT="$HOME/.pyenv"
-
-# Add pyenv to the PATH if its directory exists
-[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-
-# Initialize pyenv for Zsh
-eval "$(pyenv init - zsh)"
-
-# Add openJDK to path
-export PATH="/Users/rmathew/Dev/homebrew/opt/openjdk/bin:$PATH"
-
-# Add GOROOT to PATH
-export GOROOT=$(brew --prefix go)/libexec
-export PATH=$GOROOT/bin:$PATH
-
-# Add GOPATH to PATH
-export PATH=$PATH:$(go env GOPATH)/bin
-
+export DOTFILE_HOME="$HOME/Dev/dotfiles"
 export DOTFILES="$HOME/Dev/dotfiles"
+
+# macOS-only setup (Homebrew, mac-specific app paths)
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  # Add Homebrew install to PATH
+  export PATH="/Users/rmathew/Dev/homebrew/bin:$PATH"
+
+  # Add homebrew ruby installation to PATH
+  export PATH="/usr/local/opt/ruby/bin:$PATH"
+
+  # Add gem install directory to PATH
+  export PATH="/usr/local/lib/ruby/gems/2.7.0/bin:$PATH"
+
+  # Add Visual Studio Code (code)
+  export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
+
+  # Add openJDK to path
+  export PATH="/Users/rmathew/Dev/homebrew/opt/openjdk/bin:$PATH"
+
+  # Add GOROOT to PATH
+  command -v brew >/dev/null 2>&1 && export GOROOT=$(brew --prefix go)/libexec
+
+  # For compilers to find zlib you may need to set:
+  export LDFLAGS="${LDFLAGS} -L/usr/local/opt/zlib/lib"
+  export CPPFLAGS="${CPPFLAGS} -I/usr/local/opt/zlib/include"
+
+  # For pkg-config to find zlib you may need to set:
+  export PKG_CONFIG_PATH="${PKG_CONFIG_PATH} /usr/local/opt/zlib/lib/pkgconfig"
+fi
+
+# pyenv (only if installed)
+export PYENV_ROOT="$HOME/.pyenv"
+if [[ -d $PYENV_ROOT/bin ]]; then
+  export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init - zsh)"
+fi
+
+# Add GOROOT/bin and GOPATH/bin to PATH if Go is installed
+if command -v go >/dev/null 2>&1; then
+  [[ -n "${GOROOT:-}" ]] && export PATH=$GOROOT/bin:$PATH
+  export PATH=$PATH:$(go env GOPATH)/bin
+fi
 
 #load nvm by default
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-# Load Twilio config
-. ~/Dev/dotfiles/untracked/.twilio_zsh
+# Load Twilio config (gitignored; only present on the work machine)
+[[ -f "$DOTFILE_HOME/untracked/.twilio_zsh" ]] && . "$DOTFILE_HOME/untracked/.twilio_zsh"
 
 # Load Oh-my-ZSH
 function loadomz() {
@@ -73,6 +81,16 @@ function loadtmux() {
   . ~/Dev/dotfiles/zsh/.tmux
 }
 
+# Load cross-platform clipboard (pc/pp)
+function loadclipboard() {
+  . ~/Dev/dotfiles/zsh/.clipboard-helper
+}
+
+# Load local AI workstation helpers (claude-local, aiup, aigpu, ...)
+function loadai() {
+  . ~/Dev/dotfiles/zsh/.ai
+}
+
 # For compilers to find zlib you may need to set:
 export LDFLAGS="${LDFLAGS} -L/usr/local/opt/zlib/lib"
 export CPPFLAGS="${CPPFLAGS} -I/usr/local/opt/zlib/include"
@@ -84,15 +102,20 @@ export PKG_CONFIG_PATH="${PKG_CONFIG_PATH} /usr/local/opt/zlib/lib/pkgconfig"
 alias eohmyzsh="nvim ~/.oh-my-zsh"
 alias cl="clear";
 alias ezsh="nvim $DOTFILE_HOME/zsh/.zshrc";
-alias eala="nvim $DOTFILE_HOME/alacritty/alacritty.yml"
+alias eala="nvim $DOTFILE_HOME/alacritty/alacritty.toml"
 alias rzsh="source ~/.zshrc";
 alias lsl="ls -lhS";
 alias lsla="ls -lahS";
-alias pp="pbpaste"
-alias pc="pbcopy"
-alias tojson="python -m json.tool"
+# pc/pp come from .clipboard-helper (loaded below); it picks pbcopy on macOS,
+# clip.exe/powershell on WSL, and xclip/wl-copy on native Linux.
+alias tojson="python3 -m json.tool"
 alias tf="terraform"
-alias showfonts="system_profiler SPFontsDataType"
+
+# macOS-only aliases
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  alias showfonts="system_profiler SPFontsDataType"
+  alias listjava="/usr/libexec/java_home -V"
+fi
 
 # symlinks
 alias lnzsh="ln -s -f ~/Dev/dotfiles/zsh/.zshrc ~/.zshrc"
@@ -136,15 +159,11 @@ setns() {
   echo "✅ Namespace set to '$KUBE_NAMESPACE'"
 }
 
-# Set Java version
-alias listjava="/usr/libexec/java_home -V"
-
 # networking commands
 alias sulsof="sudo lsof -i -P | grep "
 
 #Vim commands
-alias envim="vim $DOTFILE_HOME/nvim/init.vim";
-eval "$(pyenv init -)"
+alias envim="nvim $DOTFILE_HOME/nvim/init.lua";
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
@@ -152,4 +171,6 @@ export SDKMAN_DIR="$HOME/.sdkman"
 
 loadomz
 loadtmux
+loadclipboard
+loadai
 
