@@ -1,1 +1,3 @@
 /untracked/*
+bootstrap_scripts/nvim_bootstrap.log
+bootstrap_scripts/.backup_nvim/
