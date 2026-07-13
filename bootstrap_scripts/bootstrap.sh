@@ -66,7 +66,8 @@ install_packages() {
   if [[ "$OS" == "macos" ]]; then
     if command -v brew >/dev/null 2>&1; then
       log "Installing packages via Homebrew (Brewfile)..."
-      brew bundle --file="$DOTFILES/homebrew/Brewfile"
+      brew bundle --file="$DOTFILES/homebrew/Brewfile" || \
+        log "WARNING: brew bundle failed; continuing to symlink dotfiles anyway."
     else
       log "Homebrew not found; skipping package install. See https://brew.sh"
     fi
@@ -90,8 +91,10 @@ install_packages() {
       log "All packages already installed; nothing to do."
     else
       log "Installing missing packages: ${missing[*]}"
-      sudo apt-get update
-      sudo apt-get install -y "${missing[@]}"
+      # Non-fatal: getting the symlinks in place matters more than the packages,
+      # and this script runs with `set -e`.
+      { sudo apt-get update && sudo apt-get install -y "${missing[@]}"; } || \
+        log "WARNING: apt install failed; continuing to symlink dotfiles anyway."
     fi
   fi
 }
