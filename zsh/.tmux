@@ -2,6 +2,11 @@
 echo "Loaded TMUX config!!"
 
 alias txsess="$DOTFILE_HOME/tmux/tmux-session.sh"
+
+# Kick off the hourly session autosave for the running tmux server. The loop is
+# guarded (one per server) and detached so it keeps saving after this shell
+# exits; harmless no-op when no server is running.
+(nohup "$HOME/Dev/dotfiles/tmux/tmux-autosave.sh" >/dev/null 2>&1 &) 2>/dev/null
 alias tx="tmux"
 alias txa="tmux attach -t"
 alias txls="tmux ls"
