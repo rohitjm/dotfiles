@@ -13,7 +13,7 @@
 #
 #     mkdir -p ~/Dev/dotfiles/untracked
 #     cat > ~/Dev/dotfiles/untracked/.ai_env <<'EOF'
-#     AI_GATEWAY_URL=http://10.0.0.65:4000
+#     AI_GATEWAY_URL=http://<workstation-lan-ip>:4000
 #     AI_GATEWAY_KEY=sk-...            # LITELLM_MASTER_KEY from the workstation
 #     EOF
 #
@@ -27,9 +27,15 @@ export AI_STACK="$HOME/Dev/ai-stack"          # only exists on the workstation
 # Per-machine config (URL + key). Gitignored; absent on a fresh clone.
 [[ -f "$DOTFILE_HOME/untracked/.ai_env" ]] && . "$DOTFILE_HOME/untracked/.ai_env"
 
-# The LAN address works from the workstation too (out through the Windows
-# portproxy and back), so one default is correct everywhere.
-export AI_GATEWAY_URL="${AI_GATEWAY_URL:-http://10.0.0.65:4000}"
+# Do NOT default to a hardcoded LAN address. That IP comes from DHCP and it has
+# already moved once, which silently broke both the clients and the workstation
+# itself -- the Windows portproxy went on listening on an address the machine no
+# longer held, so everything looked configured and nothing answered.
+#
+# Loopback is always right on the workstation, and it skips the pointless trip
+# out through the portproxy and back. Clients override this in untracked/.ai_env
+# (run ai-client-config on the workstation to print the block).
+export AI_GATEWAY_URL="${AI_GATEWAY_URL:-http://127.0.0.1:4000}"
 
 # Key resolution, in order: explicit env -> untracked/.ai_env -> the gateway's own
 # .env (workstation only). Clients only ever have the first two.
@@ -151,7 +157,7 @@ if [[ -d "$AI_STACK" ]]; then
   # Print the block to drop into untracked/.ai_env on a client machine.
   ai-client-config() {
     local key; key="$(_ai_key)" || return 1
-    local lan; lan="$(_ai_lan_url)"
+    local lan; lan="$(_ai_lan_url)" || return 1
     cat <<EOF
 # Add to ~/Dev/dotfiles/untracked/.ai_env on the CLIENT machine:
 AI_GATEWAY_URL=$lan
@@ -164,7 +170,13 @@ EOF
     local ip
     ip="$(/mnt/c/Windows/System32/ipconfig.exe 2>/dev/null | tr -d '\r' \
           | grep -oE '10\.0\.0\.[0-9]+' | head -1)"
-    print -r -- "http://${ip:-10.0.0.65}:4000"
+    # Never fall back to a guess. A wrong-but-plausible address is what made the
+    # last failure so hard to see: everything looked configured and nothing answered.
+    if [[ -z "$ip" ]]; then
+      echo "Could not determine the workstation's LAN IP from ipconfig." >&2
+      return 1
+    fi
+    print -r -- "http://${ip}:4000"
   }
 
 fi
