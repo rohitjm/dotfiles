@@ -65,8 +65,8 @@ for m in json.load(sys.stdin)["data"]:
 # Run Claude Code against local inference instead of the Anthropic API.
 #
 #   claude-local                 pick a model interactively
-#   claude-local -m local-fast   choose one up front
-#   AI_MODEL=local-fast claude-local
+#   claude-local -m qwen3-coder   choose one up front
+#   AI_MODEL=qwen3-coder claude-local
 claude-local() {
   local key model
   key="$(_ai_key)" || return 1
@@ -83,14 +83,14 @@ claude-local() {
   model="${model:-${AI_MODEL:-}}"
 
   # No model given: ask the gateway what it serves and let the user pick. Falls
-  # back to local-large when non-interactive (scripts, pipes) or fzf is absent.
+  # back to qwen3.6 when non-interactive (scripts, pipes) or fzf is absent.
   if [[ -z "$model" ]]; then
     local models; models="$(_ai_model_list)"
     if [[ -n "$models" && -t 0 && -t 1 ]] && command -v fzf >/dev/null 2>&1; then
       model="$(print -r -- "$models" | fzf --height=40% --reverse \
                  --prompt='model> ' --header='Local model for this Claude Code session')"
     fi
-    : "${model:=local-large}"
+    : "${model:=qwen3.6}"
   fi
 
   echo "claude-local: using '$model' via $AI_GATEWAY_URL"
@@ -131,7 +131,7 @@ aiask() {
   local key; key="$(_ai_key)" || return 1
   curl -s -m 600 "$AI_GATEWAY_URL/v1/chat/completions" \
     -H "Authorization: Bearer $key" -H "Content-Type: application/json" \
-    -d "{\"model\":\"${AI_MODEL:-local-large}\",\"messages\":[{\"role\":\"user\",\"content\":\"$*\"}]}" \
+    -d "{\"model\":\"${AI_MODEL:-qwen3.6}\",\"messages\":[{\"role\":\"user\",\"content\":\"$*\"}]}" \
     | python3 -c 'import sys,json; print(json.load(sys.stdin)["choices"][0]["message"]["content"])'
 }
 
