@@ -28,27 +28,43 @@ esac; done
 KDIR="$HOME/.kube"; mkdir -p "$KDIR"; chmod 700 "$KDIR"
 command -v kubectl >/dev/null || { echo "kubectl not installed yet"; exit 1; }
 
-# Pull one cluster's kubeconfig, rewrite server, rename context to $name.
+# k3s names its cluster, user, AND context all "default". Renaming only the context
+# (kubectl's only rename verb) is NOT enough: when two such kubeconfigs are flattened
+# into one ~/.kube/config, their identically-named "default" cluster+user entries collide
+# (last wins), so every context silently resolves to the same cluster. Normalize all three
+# names to $name so multiple clusters truly coexist. Needs yq (installed by the bootstrap).
+normalize_names() {
+  local out="$1" name="$2"
+  if ! command -v yq >/dev/null; then
+    echo "  ⚠️  yq not found — cluster/user names left as 'default'; contexts WILL collide on flatten"; return
+  fi
+  yq -y -i "
+    .clusters[0].name = \"$name\" | .users[0].name = \"$name\" |
+    .contexts[0].name = \"$name\" | .contexts[0].context.cluster = \"$name\" |
+    .contexts[0].context.user = \"$name\" | .\"current-context\" = \"$name\"
+  " "$out"
+}
+
+# Pull one cluster's kubeconfig, rewrite server, normalize all names to $name.
 pull() {
   local name="$1" ssh_target="$2" api="$3" out="$KDIR/${1}.kubeconfig"
-  # If sync_admin_secrets.sh already copied this kubeconfig, use it as-is (it has
-  # certs embedded + the right server) — just make sure the context is named $name.
+  # If sync_admin_secrets.sh already copied this kubeconfig, use it as-is (certs
+  # embedded + right server); otherwise pull it from the control-plane over SSH.
   if [ -s "$out" ]; then
-    local cur; cur=$(KUBECONFIG="$out" kubectl config current-context 2>/dev/null || true)
-    [ -n "$cur" ] && [ "$cur" != "$name" ] && KUBECONFIG="$out" kubectl config rename-context "$cur" "$name" >/dev/null 2>&1 || true
-    echo "  ✅ $name: using existing $out (context: $name)"; return 0
+    echo "  ✅ $name: using existing $out"
+  elif [ -z "$ssh_target" ]; then
+    echo "  ⏭  $name: no SSH target set — skipping (edit the config)"; return 1
+  else
+    echo "  ⤵  $name: pulling kubeconfig from $ssh_target ..."
+    if ! ssh -o ConnectTimeout=8 -o BatchMode=yes "$ssh_target" \
+          'sudo cat /etc/rancher/k3s/k3s.yaml' > "$out.tmp" 2>/dev/null || [ ! -s "$out.tmp" ]; then
+      echo "  ⚠️  $name: SSH pull failed (key/reachability?) — skipping"; rm -f "$out.tmp"; return 1
+    fi
+    sed -i "s#server: https://127.0.0.1:6443#server: ${api}#" "$out.tmp"
+    mv "$out.tmp" "$out"; chmod 600 "$out"
   fi
-  [ -z "$ssh_target" ] && { echo "  ⏭  $name: no SSH target set — skipping (edit the config)"; return 1; }
-  echo "  ⤵  $name: pulling kubeconfig from $ssh_target ..."
-  if ! ssh -o ConnectTimeout=8 -o BatchMode=yes "$ssh_target" \
-        'sudo cat /etc/rancher/k3s/k3s.yaml' > "$out.tmp" 2>/dev/null || [ ! -s "$out.tmp" ]; then
-    echo "  ⚠️  $name: SSH pull failed (key/reachability?) — skipping"; rm -f "$out.tmp"; return 1
-  fi
-  sed -i "s#server: https://127.0.0.1:6443#server: ${api}#" "$out.tmp"
-  # k3s names context/cluster/user all "default" → rename so both clusters coexist
-  KUBECONFIG="$out.tmp" kubectl config rename-context default "$name" >/dev/null 2>&1
-  mv "$out.tmp" "$out"; chmod 600 "$out"
-  echo "  ✅ $name -> $out (context: $name)"
+  normalize_names "$out" "$name"
+  echo "  ✅ $name -> $out (context/cluster/user: $name)"
 }
 
 echo "Wiring kubectl for both clusters..."
