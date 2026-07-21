@@ -38,7 +38,7 @@ cd ~/Dev/dotfiles && ./bootstrap_scripts/cachyos_bootstrap.sh
 exec zsh
 ```
 The bootstrap installs the toolchain (kubectl/helm/kubectx/k9s/ansible/argocd/kubeseal,
-git/gh/nvim/tmux, claude-code/aider), oh-my-zsh, symlinks dotfiles, sets zsh, enables
+git/gh/nvim/tmux, claude-code), oh-my-zsh, symlinks dotfiles, sets zsh, enables
 tailscale + libvirt, and **merges the copied kubeconfigs** into `~/.kube/config`
 (contexts `rmhome` + `monlash`).
 

@@ -42,39 +42,63 @@ have pacman || { echo "This script is for Arch/CachyOS (pacman not found)."; exi
 # ── 1. system update + AUR helper (CachyOS ships paru; install if missing) ────
 log "Updating system + ensuring AUR helper..."
 sudo pacman -Syu --noconfirm --needed
-if ! have paru && ! have yay; then
-  sudo pacman -S --noconfirm --needed base-devel git
-  tmp=$(mktemp -d); git clone https://aur.archlinux.org/paru-bin.git "$tmp/paru"
-  ( cd "$tmp/paru" && makepkg -si --noconfirm ); rm -rf "$tmp"
+# CachyOS ships paru, but a full -Syu can bump libalpm ahead of a preinstalled paru-bin
+# (libalpm.so.N mismatch -> "cannot open shared object file"), so verify paru actually
+# RUNS, not just that the binary exists. If broken, replace paru-bin with the repo build.
+if ! (have paru && paru --version >/dev/null 2>&1) && ! have yay; then
+  if pacman -Si paru >/dev/null 2>&1; then
+    sudo pacman -Rdd --noconfirm paru-bin 2>/dev/null || true
+    sudo pacman -S --noconfirm --needed paru
+  else
+    sudo pacman -S --noconfirm --needed base-devel git
+    tmp=$(mktemp -d); git clone https://aur.archlinux.org/paru-bin.git "$tmp/paru"
+    ( cd "$tmp/paru" && makepkg -si --noconfirm ); rm -rf "$tmp"
+  fi
 fi
-AUR=$(have paru && echo paru || echo yay)
+AUR=$( (have paru && paru --version >/dev/null 2>&1) && echo paru || echo yay)
 ok "AUR helper: $AUR"
 
 # ── 2. packages from the official repos ──────────────────────────────────────
 # (Maps the macOS Brewfile/leaves to Arch package names.)
 log "Installing official-repo packages..."
-sudo pacman -S --noconfirm --needed \
-  base-devel git zsh neovim tmux starship lazygit github-cli \
-  fzf ripgrep fd bat eza zoxide jq yq wget tree cmake pkgconf man-db \
-  ffmpeg perl-image-exiftool pandoc protobuf enchant xorriso \
-  python python-pipx uv nodejs npm rust go jdk-openjdk ruby \
-  qemu-full libvirt virt-manager dnsmasq edk2-ovmf \
-  kubectl helm kubectx k9s ansible \
-  tailscale \
-  xclip wl-clipboard unzip rsync openssh \
+OFFICIAL_PKGS=(
+  base-devel git zsh neovim tmux starship lazygit github-cli
+  fzf ripgrep fd bat eza zoxide jq yq wget tree cmake pkgconf man-db
+  ffmpeg perl-image-exiftool pandoc-cli protobuf enchant libisoburn
+  python python-pipx uv nodejs npm rust go jdk-openjdk ruby
+  qemu-full libvirt virt-manager dnsmasq edk2-ovmf
+  kubectl helm kubectx k9s ansible kubeseal kustomize argocd
+  tailscale
+  xclip wl-clipboard unzip rsync openssh
+)
+# Filter to packages that actually exist in the repos BEFORE installing — a single
+# unknown name makes `pacman -S` abort the WHOLE transaction (nothing installs). This
+# way distro drift (e.g. pandoc->pandoc-cli, xorriso->libisoburn) only skips one pkg.
+avail=()
+for p in "${OFFICIAL_PKGS[@]}"; do
+  if pacman -Si "$p" >/dev/null 2>&1; then avail+=("$p"); else warn "skip (not in repos): $p"; fi
+done
+sudo pacman -S --noconfirm --needed "${avail[@]}" \
   || warn "some pacman packages failed — check the log"
 
-# ── 3. packages from the AUR ─────────────────────────────────────────────────
+# ── 3. packages from the AUR (GUI apps — skip on headless boxes) ──────────────
 log "Installing AUR packages..."
 $AUR -S --noconfirm --needed \
-  kubeseal kustomize argocd \
   visual-studio-code-bin wezterm alacritty \
   || warn "some AUR packages failed — skip GUI ones on a headless box"
 
 # ── 4. AI / coding tools ─────────────────────────────────────────────────────
 log "Installing AI/coding CLIs..."
-have claude || npm install -g @anthropic-ai/claude-code || warn "claude-code install failed"
-have aider  || uv tool install aider-chat || warn "aider install failed"
+# npm global installs go to a user prefix (~/.local, on PATH via .zshrc.linux) to avoid
+# EACCES on /usr/lib, and --allow-scripts lets claude-code's postinstall fetch its native
+# binary (npm blocks package install-scripts by default).
+if ! have claude; then
+  npm config set prefix "$HOME/.local" >/dev/null 2>&1
+  npm install -g --allow-scripts=@anthropic-ai/claude-code @anthropic-ai/claude-code \
+    || warn "claude-code install failed"
+fi
+# aider is intentionally NOT installed by default (heavy scipy source build). To add it:
+#   sudo pacman -S --needed gcc-fortran openblas && uv tool install aider-chat
 # LM Studio (GUI) is AUR: '$AUR -S lmstudio' — install manually on desktops only.
 
 # ── 5. oh-my-zsh + shell plugins ─────────────────────────────────────────────

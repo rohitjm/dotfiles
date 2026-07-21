@@ -29,7 +29,8 @@ echo "→ Testing SSH to $TARGET ..."
 ssh -o ConnectTimeout=8 -o BatchMode=no "$TARGET" 'echo "  connected as $(whoami)@$(hostname)"' || {
   echo "✗ can't SSH to $TARGET. On the target: sudo systemctl enable --now sshd, and make sure it's reachable (Tailscale up / same LAN)."; exit 1; }
 
-R() { rsync -av --chmod=F600 "$@"; }   # copy files as 0600
+R() { rsync -av "$@"; }   # perms are fixed in a follow-up pass below
+                          # (macOS openrsync has no --chmod flag)
 
 # ── 1. SSH keys (GitHub + node/cluster access) ───────────────────────────────
 echo "→ SSH keys ..."
@@ -43,9 +44,9 @@ echo "→ git identity ..."
 for g in .gitconfig .gitconfig-personal .gitconfig-monlash; do
   [ -f "$HOME/$g" ] && R "$HOME/$g" "$TARGET:$g"
 done
-# includeIf paths in ~/.gitconfig are Mac-absolute (/Users/rohitmathew/...) —
-# rewrite to the target's $HOME so the conditional includes still resolve.
-ssh "$TARGET" 'f=~/.gitconfig; [ -f "$f" ] && sed -i "s#/Users/rohitmathew/#$HOME/#g" "$f" && echo "  rewrote gitconfig include paths -> $HOME"'
+# includeIf paths in ~/.gitconfig are Mac-absolute (/Users/rohitmathew/...) — they're
+# rewritten to the target's $HOME in the fixup block below (kept there so it runs under
+# bash regardless of the target's login shell — a fish login shell chokes on `f=...`).
 
 # ── 3. kubeconfigs (rmhome + monlash; monlash renamed to the bootstrap name) ──
 echo "→ kubeconfigs ..."
@@ -58,9 +59,32 @@ echo "→ ~/.config secrets ..."
 for d in rmhome pihole monlashsolutions; do
   if [ -d "$HOME/.config/$d" ]; then
     ssh "$TARGET" "mkdir -p ~/.config/$d && chmod 700 ~/.config/$d"
-    rsync -av --chmod=F600 "$HOME/.config/$d/" "$TARGET:.config/$d/"
+    rsync -av "$HOME/.config/$d/" "$TARGET:.config/$d/"
   fi
 done
+
+# ── 5. fix up perms + rewrite gitconfig paths (bash -s: immune to target login shell) ──
+echo "→ fixing perms + gitconfig paths ..."
+ssh "$TARGET" 'bash -s' <<'REMOTE'
+set -u
+chmod 700 ~/.ssh ~/.kube 2>/dev/null || true
+find ~/.ssh   -type f -exec chmod 600 {} + 2>/dev/null || true
+find ~/.kube  -type f -exec chmod 600 {} + 2>/dev/null || true
+for g in .gitconfig .gitconfig-personal .gitconfig-monlash; do
+  [ -f "$HOME/$g" ] && chmod 600 "$HOME/$g"
+done
+if [ -f "$HOME/.gitconfig" ]; then
+  sed -i "s#/Users/rohitmathew/#$HOME/#g" "$HOME/.gitconfig"
+  echo "  rewrote gitconfig include paths -> $HOME"
+fi
+for d in rmhome pihole monlashsolutions; do
+  if [ -d "$HOME/.config/$d" ]; then
+    chmod 700 "$HOME/.config/$d"
+    find "$HOME/.config/$d" -type f -exec chmod 600 {} + 2>/dev/null || true
+  fi
+done
+echo "  perms set (dirs 700, files 600)"
+REMOTE
 
 cat <<EOF
 
