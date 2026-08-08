@@ -118,7 +118,8 @@ claude-local() {
 aimodels() { _ai_model_list }
 
 aiping() {
-  if curl -sf -m 5 "$AI_GATEWAY_URL/health/liveliness" >/dev/null 2>&1; then
+  local key; key="$(_ai_key)" || return 1
+  if curl -sf -m 5 "$AI_GATEWAY_URL/v1/models" -H "Authorization: Bearer $key" >/dev/null 2>&1; then
     echo "gateway up: $AI_GATEWAY_URL"
   else
     echo "gateway UNREACHABLE: $AI_GATEWAY_URL" >&2
