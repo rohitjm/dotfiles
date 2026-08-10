@@ -181,3 +181,15 @@ EOF
   }
 
 fi
+
+# pi-local — the pi coding agent on the dsworkstation vLLM model. Unlike
+# claude-local (Anthropic-format via the gateway), pi talks the OpenAI-native
+# vLLM endpoint directly through the "local-vllm" provider registered in pi's
+# settings (~/.pi/extensions/local-vllm-provider.mjs). Use it like claude-code:
+#   pi-local                        interactive coding session on the local model
+#   pi-local -p "explain this file" one-shot / non-interactive
+#   PI_MODEL=qwen3-coder pi-local   override the served model id (must match vLLM)
+pi-local() {
+  command -v pi >/dev/null 2>&1 || { echo "pi not installed: npm i -g @earendil-works/pi-coding-agent" >&2; return 1; }
+  pi --provider local-vllm --model "${PI_MODEL:-qwen3-vl}" "$@"
+}
