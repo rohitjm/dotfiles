@@ -18,7 +18,9 @@ export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="robbyrussell"
 plugins=(git kubectl zoxide fzf zsh-autosuggestions zsh-syntax-highlighting)
 [ -f "$ZSH/oh-my-zsh.sh" ] && source "$ZSH/oh-my-zsh.sh"
-[ -f "$HOME/.oh-my-zsh-conf" ] && source "$HOME/.oh-my-zsh-conf"   # your extra omz tweaks from the repo
+# skipped: .oh-my-zsh-conf is the macOS OMZ config (full template) and double-loads OMZ here,
+# resetting plugins to (git). .zshrc.linux already configures OMZ + the full plugin list above.
+# [ -f "$HOME/.oh-my-zsh-conf" ] && source "$HOME/.oh-my-zsh-conf"
 
 # ── toolchains ───────────────────────────────────────────────────────────────
 command -v pyenv >/dev/null && { export PYENV_ROOT="$HOME/.pyenv"; eval "$(pyenv init - zsh)"; }
