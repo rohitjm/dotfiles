@@ -191,5 +191,32 @@ fi
 #   PI_MODEL=qwen3-coder pi-local   override the served model id (must match vLLM)
 pi-local() {
   command -v pi >/dev/null 2>&1 || { echo "pi not installed: npm i -g @earendil-works/pi-coding-agent" >&2; return 1; }
-  pi --provider local-vllm --model "${PI_MODEL:-qwen3-vl}" "$@"
+  pi --provider local-vllm --model "${PI_MODEL:-qwen3-vl}" --models "$PI_ALL_MODELS" "$@"
 }
+
+  # --- pi provider switchers -----------------------------------------------
+  # pi can drive several backends; switch live in-session with Ctrl+P (cycles
+  # the --models set below) or the /model command. One-time setup per cloud
+  # provider: run pi, type "/login", pick the provider, and authenticate via
+  # OAuth (reuses your Claude / ChatGPT subscription) or paste an API key.
+  # local-vllm (dsworkstation) needs no login. All helpers honor $PI_MODEL.
+  #   pi-claude   Anthropic / Claude        (default model: sonnet)
+  #   pi-codex    OpenAI / Codex            (default model: gpt-5-codex)
+  #   pi-local    dsworkstation vLLM        (default model: qwen3-vl)
+  #   pi-ai       start local, all 3 backends in the Ctrl+P cycle
+  export PI_ALL_MODELS="anthropic/*sonnet*,anthropic/*opus*,openai/*codex*,openai/gpt-5*,local-vllm/qwen3-vl"
+
+  pi-claude() {
+    command -v pi >/dev/null 2>&1 || { echo "pi not installed: npm i -g @earendil-works/pi-coding-agent" >&2; return 1; }
+    pi --provider anthropic --model "${PI_MODEL:-sonnet}" --models "$PI_ALL_MODELS" "$@"
+  }
+
+  pi-codex() {
+    command -v pi >/dev/null 2>&1 || { echo "pi not installed: npm i -g @earendil-works/pi-coding-agent" >&2; return 1; }
+    pi --provider openai --model "${PI_MODEL:-gpt-5-codex}" --models "$PI_ALL_MODELS" "$@"
+  }
+
+  pi-ai() {
+    command -v pi >/dev/null 2>&1 || { echo "pi not installed: npm i -g @earendil-works/pi-coding-agent" >&2; return 1; }
+    pi --provider "${PI_PROVIDER:-local-vllm}" --model "${PI_MODEL:-qwen3-vl}" --models "$PI_ALL_MODELS" "$@"
+  }
