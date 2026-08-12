@@ -182,41 +182,45 @@ EOF
 
 fi
 
-# pi-local — the pi coding agent on the dsworkstation vLLM model. Unlike
-# claude-local (Anthropic-format via the gateway), pi talks the OpenAI-native
-# vLLM endpoint directly through the "local-vllm" provider registered in pi's
-# settings (~/.pi/extensions/local-vllm-provider.mjs). Use it like claude-code:
-#   pi-local                        interactive coding session on the local model
-#   pi-local -p "explain this file" one-shot / non-interactive
-#   PI_MODEL=qwen3-coder pi-local   override the served model id (must match vLLM)
-pi-local() {
-  command -v pi >/dev/null 2>&1 || { echo "pi not installed: npm i -g @earendil-works/pi-coding-agent" >&2; return 1; }
+# --- pi provider switchers ---------------------------------------------------
+# pi drives several backends; switch live in-session with Ctrl+P (cycles the
+# --models set) or the /model command. Per cloud provider, one-time: run pi,
+# type "/login", pick the provider, auth via OAuth (Claude/ChatGPT subscription)
+# or an API key.
+#   pi-workstation  dsworkstation vLLM  (RTX PRO 6000, qwen3-vl, vision)  [remote]
+#   pi-local        THIS machine's own local model                       [on-box]
+#   pi-claude       Anthropic / Claude   (default model: sonnet)
+#   pi-codex        OpenAI / Codex       (default model: gpt-5-codex)
+#   pi-ai           start on the on-box local model, all backends in the Ctrl+P cycle
+# The on-box endpoint/model/key are per-machine, set in untracked/.ai_env, e.g.:
+#   export PI_LOCAL_URL=http://127.0.0.1:1234/v1        # Mac: LM Studio  (ZFlow: :4000 LiteLLM)
+#   export PI_LOCAL_KEY=lm-studio                       # placeholder, or the gateway key
+#   export PI_LOCAL_MODEL=qwen2.5-coder-32b-instruct    # a model the local server serves
+export PI_ALL_MODELS="anthropic/*sonnet*,anthropic/*opus*,openai/*codex*,openai/gpt-5*,local-vllm/qwen3-vl,local-onbox/*"
+
+_pi_check() { command -v pi >/dev/null 2>&1 || { echo "pi not installed: npm i -g @earendil-works/pi-coding-agent" >&2; return 1; }; }
+
+pi-workstation() {   # dsworkstation vLLM (remote, vision-capable). $PI_MODEL overrides.
+  _pi_check || return 1
   pi --provider local-vllm --model "${PI_MODEL:-qwen3-vl}" --models "$PI_ALL_MODELS" "$@"
 }
 
-  # --- pi provider switchers -----------------------------------------------
-  # pi can drive several backends; switch live in-session with Ctrl+P (cycles
-  # the --models set below) or the /model command. One-time setup per cloud
-  # provider: run pi, type "/login", pick the provider, and authenticate via
-  # OAuth (reuses your Claude / ChatGPT subscription) or paste an API key.
-  # local-vllm (dsworkstation) needs no login. All helpers honor $PI_MODEL.
-  #   pi-claude   Anthropic / Claude        (default model: sonnet)
-  #   pi-codex    OpenAI / Codex            (default model: gpt-5-codex)
-  #   pi-local    dsworkstation vLLM        (default model: qwen3-vl)
-  #   pi-ai       start local, all 3 backends in the Ctrl+P cycle
-  export PI_ALL_MODELS="anthropic/*sonnet*,anthropic/*opus*,openai/*codex*,openai/gpt-5*,local-vllm/qwen3-vl"
+pi-local() {         # this machine's own local model (LM Studio / LiteLLM / Ollama, per .ai_env)
+  _pi_check || return 1
+  pi --provider local-onbox --model "${PI_MODEL:-${PI_LOCAL_MODEL:-local-model}}" --models "$PI_ALL_MODELS" "$@"
+}
 
-  pi-claude() {
-    command -v pi >/dev/null 2>&1 || { echo "pi not installed: npm i -g @earendil-works/pi-coding-agent" >&2; return 1; }
-    pi --provider anthropic --model "${PI_MODEL:-sonnet}" --models "$PI_ALL_MODELS" "$@"
-  }
+pi-claude() {
+  _pi_check || return 1
+  pi --provider anthropic --model "${PI_MODEL:-sonnet}" --models "$PI_ALL_MODELS" "$@"
+}
 
-  pi-codex() {
-    command -v pi >/dev/null 2>&1 || { echo "pi not installed: npm i -g @earendil-works/pi-coding-agent" >&2; return 1; }
-    pi --provider openai --model "${PI_MODEL:-gpt-5-codex}" --models "$PI_ALL_MODELS" "$@"
-  }
+pi-codex() {
+  _pi_check || return 1
+  pi --provider openai --model "${PI_MODEL:-gpt-5-codex}" --models "$PI_ALL_MODELS" "$@"
+}
 
-  pi-ai() {
-    command -v pi >/dev/null 2>&1 || { echo "pi not installed: npm i -g @earendil-works/pi-coding-agent" >&2; return 1; }
-    pi --provider "${PI_PROVIDER:-local-vllm}" --model "${PI_MODEL:-qwen3-vl}" --models "$PI_ALL_MODELS" "$@"
-  }
+pi-ai() {            # start on the on-box local model, everything in the Ctrl+P cycle
+  _pi_check || return 1
+  pi --provider "${PI_PROVIDER:-local-onbox}" --model "${PI_MODEL:-${PI_LOCAL_MODEL:-local-model}}" --models "$PI_ALL_MODELS" "$@"
+}
